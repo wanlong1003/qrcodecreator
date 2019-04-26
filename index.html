@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	<title>批量生成二维码</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="qrcode.js"></script>
+	<script type="text/javascript" src="printThis.js"></script>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			width: 1280px;
+			margin: 0 auto;
+		}
+
+		h1 {
+			margin: 30px;
+			text-align: center;
+		}
+
+		#txtInput {
+			width: 100%;
+			display: inline-block;
+		}
+
+		#container>div {
+			position: relative;
+			display: inline-block;
+			page-break-inside: avoid;
+			text-align: center;
+			padding: 10px;
+		}
+
+		.border {
+			border: 1px dotted #888;
+		}
+
+		#txtInput {
+			margin-top: 10px;
+		}
+
+		#container>div img {
+			margin: 0 auto;
+		}
+
+		#container>div p {
+			word-wrap: break-word;
+			font-size: 10px;
+			height: 62px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			margin-top: 10px;
+		}
+
+		input[type="button"] {
+			padding: 5px 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>二维码批量生成打印</h1>
+	<label for="txtSize">尺寸</label>
+	<input id="txtSize" type="range" value="128" min="32" max="1280" onchange="sizeChange()" />
+	<label id="labSize" for="txtSize">128px</label>
+	<label style="margin:0 30px" for="checkbox">裁剪线 <input type="checkbox" id="checkBorder"></label>
+
+	<input type="button" value="生成二维码" onclick="buildCode()" />
+	<input type="button" value="打印" onclick="print()" />
+	<div>
+		<textarea id="txtInput" rows="20"></textarea>
+	</div>
+	<div id="container"></div>
+
+	<script type="text/javascript">
+		function sizeChange() {
+			document.getElementById("labSize").innerHTML = document.getElementById("txtSize").value + "px"
+		}
+
+		function buildCode() {
+			document.getElementById("container").innerHTML = "";
+			let content = document.getElementById("txtInput").value.trim();
+			if (content && content !== "") {
+				let arr = content.split("\n")
+				if (arr.length <= 0) {
+					return false
+				}
+				for (let i = 0; i < arr.length; i++) {
+					makeCode(arr[i])
+				}
+				return true
+			}
+			else {
+				return false
+			}
+		}
+
+		function makeCode(val) {
+			let width = parseInt(document.getElementById("txtSize").value)
+			let elContainer = document.createElement("div");
+			if (document.getElementById("checkBorder").checked) {
+				elContainer.className = "border"
+			}
+			elContainer.style.width = (width + 30) + "px";
+			var el = document.createElement("div");
+			var p = document.createElement("p");
+			p.innerHTML = val;
+			document.getElementById("container").append(elContainer);
+			elContainer.append(el);
+			elContainer.append(p);
+			var qrcode = new QRCode(el, {
+				width: width,
+				height: width
+			});
+			qrcode.makeCode(val);
+		}
+
+		function print() {
+			let isPrint = document.getElementById("container").innerHTML != ""
+			if (!isPrint) {
+				isPrint = buildCode()
+			}
+			if (isPrint) {
+				$("#container").printThis({
+					importStyle: true,
+				})
+			}
+		}
+	</script>
+</body>
